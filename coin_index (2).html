@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RixCoins">
+<meta name="theme-color" content="#0f0e0c">
+<title>RixCoinCollection</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f0e0c; --bg2:#1a1814; --bg3:#242118; --bg4:#2e2a22;
+  --text:#f0e8d8; --text2:#a89880; --text3:#6b5f4e;
+  --border:rgba(240,232,216,0.08); --border2:rgba(240,232,216,0.15);
+  --gold:#c9a84c; --gold2:#e8c96a; --gold-bg:rgba(201,168,76,0.12);
+  --gold-text:#f0d898; --silver:#9ba8b4; --silver-bg:rgba(155,168,180,0.12);
+  --bronze:#b87333; --bronze-bg:rgba(184,115,51,0.12);
+  --green:#5a8f5a; --green-bg:rgba(90,143,90,0.15); --green-text:#a8d4a8;
+  --red:#8f3a3a; --red-bg:rgba(143,58,58,0.15); --red-text:#d4a0a0;
+  --blue:#3a6a8f; --blue-bg:rgba(58,106,143,0.15); --blue-text:#a0c4d4;
+  --amber:#8f6a2a; --amber-bg:rgba(143,106,42,0.15); --amber-text:#d4b870;
+  --r:10px; --rs:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+
+body {
+  font-family:'Crimson Pro',Georgia,serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:16px;
+  overscroll-behavior:none;
+  min-height:100vh;
+}
+
+/* Subtle coin-texture background */
+body::before {
+  content:'';
+  position:fixed;inset:0;
+  background:radial-gradient(ellipse at 20% 50%, rgba(201,168,76,0.03) 0%, transparent 60%),
+             radial-gradient(ellipse at 80% 20%, rgba(155,168,180,0.03) 0%, transparent 50%);
+  pointer-events:none;z-index:0;
+}
+
+.page{display:none;padding:0 0 90px;position:relative;z-index:1;}
+.page.on{display:block;}
+
+.phead {
+  padding:16px 16px 8px;
+  padding-top:calc(16px + env(safe-area-inset-top));
+  border-bottom:0.5px solid var(--border);
+}
+.phead-row{display:flex;align-items:baseline;gap:10px;}
+.phead h1 {
+  font-family:'Cinzel',serif;
+  font-size:22px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  color:var(--gold2);
+}
+.phead p{font-size:13px;color:var(--text3);margin-top:2px;font-style:italic;}
+
+/* Tab bar */
+.tab-bar {
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--bg2);
+  border-top:0.5px solid var(--border);
+  display:flex;z-index:100;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tab {
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:10px 4px 6px;cursor:pointer;gap:3px;
+  border:none;background:none;color:var(--text3);font-size:10px;
+  font-family:'Crimson Pro',serif;letter-spacing:0.3px;
+}
+.tab.on{color:var(--gold);}
+.tab svg{width:22px;height:22px;}
+.tbadge{background:var(--gold);color:var(--bg);font-size:9px;padding:1px 5px;border-radius:20px;min-width:16px;text-align:center;font-weight:700;}
+
+/* Sync bar */
+.sync-bar {
+  display:flex;align-items:center;gap:8px;
+  padding:6px 16px;font-size:12px;
+  border-bottom:0.5px solid var(--border);
+  background:var(--bg2);flex-wrap:wrap;
+}
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.sdot.ok{background:var(--green);}.sdot.syncing{background:var(--gold);animation:pulse .8s ease-in-out infinite;}.sdot.err{background:var(--red-text);}.sdot.off{background:var(--text3);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.slabel{flex:1;color:var(--text2);font-style:italic;}
+.sbtn{padding:4px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:20px;cursor:pointer;background:var(--bg3);color:var(--text2);font-family:'Crimson Pro',serif;}
+.sbtn:active{opacity:0.7;}
+
+/* Method tabs */
+.mtabs{display:flex;margin:10px 16px 0;border:0.5px solid var(--border2);border-radius:var(--r);overflow:hidden;}
+.mtab{flex:1;padding:10px 6px;font-size:13px;font-weight:500;text-align:center;cursor:pointer;background:var(--bg2);color:var(--text2);border:none;font-family:'Crimson Pro',serif;letter-spacing:0.2px;}
+.mtab.on{background:var(--gold);color:var(--bg);font-weight:600;}
+
+/* Buttons */
+.btn{padding:9px 16px;font-size:14px;font-weight:500;border:0.5px solid var(--border2);border-radius:var(--rs);cursor:pointer;background:var(--bg3);color:var(--text);font-family:'Crimson Pro',serif;}
+.btn:active{transform:scale(0.97);}
+.btnp{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:600;}
+.btnd{background:var(--red-bg);color:var(--red-text);border-color:var(--red);}
+.btns{background:var(--green-bg);color:var(--green-text);border-color:var(--green);}
+.btn-sm{padding:6px 12px;font-size:13px;}
+
+/* Search tab UI */
+.search-section{padding:12px 16px 0;}
+.field-row{display:flex;gap:8px;margin-bottom:10px;}
+.field-group{display:flex;flex-direction:column;gap:4px;flex:1;}
+.field-group label{font-size:11px;color:var(--text3);font-family:'Cinzel',serif;letter-spacing:0.5px;font-weight:400;}
+.field-group input,.field-group select{
+  padding:9px 10px;font-size:14px;
+  border:0.5px solid var(--border2);border-radius:var(--rs);
+  background:var(--bg3);color:var(--text);
+  font-family:'Crimson Pro',serif;
+}
+.field-group input:focus,.field-group select:focus{outline:none;border-color:var(--gold);}
+.field-group input::placeholder{color:var(--text3);}
+
+/* Numista results */
+.nresults{margin:0 16px;display:flex;flex-direction:column;gap:6px;}
+.nitem{display:flex;gap:10px;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:10px;cursor:pointer;align-items:center;}
+.nitem:active{background:var(--bg4);}
+.nthumb{width:44px;height:44px;border-radius:50%;background:var(--bg4);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px;border:1px solid var(--border2);}
+.nthumb img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.ninfo{flex:1;min-width:0;}
+.ninfo h4{font-size:14px;font-weight:500;color:var(--text);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ninfo p{font-size:12px;color:var(--text2);font-style:italic;}
+.nchoose{font-size:11px;color:var(--gold);flex-shrink:0;}
+
+/* AI photo */
+.photo-section{padding:12px 16px 0;}
+.ai-status{padding:11px 13px;border-radius:var(--rs);font-size:13px;display:none;margin-top:8px;font-style:italic;}
+.ai-status.loading{background:var(--blue-bg);color:var(--blue-text);}
+.ai-status.ok{background:var(--green-bg);color:var(--green-text);}
+.ai-status.err{background:var(--red-bg);color:var(--red-text);}
+
+/* Result card */
+.rbox{margin:12px 16px;background:var(--bg2);border:0.5px solid var(--gold);border-radius:var(--r);display:none;box-shadow:0 0 20px rgba(201,168,76,0.08);}
+.rbox.on{display:block;}
+.rtop{display:flex;gap:12px;padding:14px;border-bottom:0.5px solid var(--border);}
+
+/* Coin photo slots */
+.photo-slots{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px;border-bottom:0.5px solid var(--border);}
+.photo-slot{display:flex;flex-direction:column;gap:4px;}
+.photo-slot label{font-size:10px;color:var(--text3);font-family:'Cinzel',serif;letter-spacing:0.5px;}
+.photo-thumb{width:100%;aspect-ratio:1;border-radius:var(--rs);background:var(--bg3);border:0.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;border-radius:var(--rs);}
+.photo-thumb .add-icon{font-size:24px;color:var(--text3);}
+.photo-thumb:active{opacity:0.8;}
+
+.coin-preview{display:flex;gap:8px;align-items:center;}
+.coin-face{width:54px;height:54px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden;}
+.coin-face img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.rmeta h3{font-family:'Cinzel',serif;font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:3px;}
+.rmeta .sub{font-size:13px;color:var(--text2);margin-bottom:6px;font-style:italic;}
+.tags{display:flex;flex-wrap:wrap;gap:4px;}
+.tag{font-size:11px;padding:2px 8px;border-radius:20px;font-family:'Crimson Pro',serif;}
+.tgold{background:var(--gold-bg);color:var(--gold-text);}
+.tsilver{background:var(--silver-bg);color:var(--silver);}
+.tbronze{background:var(--bronze-bg);color:var(--bronze);}
+.tgreen{background:var(--green-bg);color:var(--green-text);}
+.tblue{background:var(--blue-bg);color:var(--blue-text);}
+.tamber{background:var(--amber-bg);color:var(--amber-text);}
+
+/* Form fields */
+.rfields{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.rf{display:flex;flex-direction:column;gap:3px;}
+.rf.full{grid-column:span 2;}
+.rf label{font-size:10px;color:var(--text3);font-family:'Cinzel',serif;letter-spacing:0.5px;}
+.rf input,.rf select{padding:8px 9px;font-size:14px;border:0.5px solid var(--border2);border-radius:var(--rs);background:var(--bg3);color:var(--text);font-family:'Crimson Pro',serif;}
+.rf input:focus,.rf select:focus{outline:none;border-color:var(--gold);}
+.rf input::placeholder{color:var(--text3);}
+
+.ract{display:flex;flex-direction:column;gap:8px;padding:0 14px 14px;}
+.ract-row{display:flex;gap:8px;}
+
+/* Collection list */
+.clist-wrap{padding:8px 16px;display:flex;flex-direction:column;gap:8px;}
+.citem{display:flex;gap:12px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:12px;cursor:pointer;align-items:flex-start;}
+.citem:active{background:var(--bg3);}
+.citem-face{width:48px;height:48px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden;}
+.citem-face img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.cinfo{flex:1;min-width:0;}
+.cinfo h4{font-size:14px;font-weight:500;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Cinzel',serif;font-weight:400;font-size:13px;color:var(--gold2);}
+.cinfo .csub{font-size:12px;color:var(--text2);margin-bottom:4px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cright{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.cond-pill{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;white-space:nowrap;font-family:'Cinzel',serif;letter-spacing:0.3px;}
+.cond-mint{background:var(--green-bg);color:var(--green-text);}
+.cond-xf{background:var(--blue-bg);color:var(--blue-text);}
+.cond-vf{background:var(--gold-bg);color:var(--gold-text);}
+.cond-f{background:var(--amber-bg);color:var(--amber-text);}
+.cond-vg{background:var(--bronze-bg);color:var(--bronze);}
+.cond-poor{background:var(--bg4);color:var(--text3);}
+.val-badge{font-size:11px;color:var(--text2);font-style:italic;}
+
+/* Search & filters */
+.search-wrap{padding:8px 16px 4px;}
+.search-wrap input{width:100%;padding:9px 13px;font-size:15px;border:0.5px solid var(--border2);border-radius:var(--r);background:var(--bg2);color:var(--text);font-family:'Crimson Pro',serif;}
+.search-wrap input:focus{outline:none;border-color:var(--gold);}
+.search-wrap input::placeholder{color:var(--text3);}
+.frow{display:flex;gap:8px;padding:8px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.frow::-webkit-scrollbar{display:none;}
+.frow select{padding:6px 9px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--rs);background:var(--bg2);color:var(--text);flex-shrink:0;font-family:'Crimson Pro',serif;}
+
+/* Analytics */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px;}
+.scard{background:var(--bg2);border-radius:var(--r);padding:14px;border:0.5px solid var(--border);}
+.scard .sl{font-size:11px;color:var(--text3);margin-bottom:4px;font-family:'Cinzel',serif;letter-spacing:0.5px;}
+.scard .sv{font-size:26px;font-weight:300;color:var(--gold2);font-family:'Cinzel',serif;}
+.scard.full{grid-column:span 2;}
+.acard{margin:0 16px 12px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;}
+.acard h4{font-size:12px;color:var(--text3);margin-bottom:10px;font-family:'Cinzel',serif;letter-spacing:0.5px;}
+.brow{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px;}
+.bl{width:80px;flex-shrink:0;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic;}
+.bt{flex:1;background:var(--bg3);border-radius:4px;height:6px;overflow:hidden;}
+.bf{height:100%;border-radius:4px;background:var(--gold);}
+.bc{width:24px;text-align:right;color:var(--text3);font-size:11px;}
+
+/* Export */
+.esec{margin:12px 16px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.esec-h{padding:12px 16px;font-size:13px;font-weight:600;border-bottom:0.5px solid var(--border);font-family:'Cinzel',serif;letter-spacing:0.3px;color:var(--gold2);}
+.esec-b{padding:12px 16px;}
+.cpicker{display:flex;flex-wrap:wrap;gap:8px;}
+.ctog{padding:5px 11px;font-size:12px;border:0.5px solid var(--border2);border-radius:20px;cursor:pointer;background:var(--bg3);color:var(--text2);font-family:'Crimson Pro',serif;}
+.ctog.on{background:var(--gold-bg);color:var(--gold-text);border-color:var(--gold);font-weight:500;}
+.ebtn{display:flex;align-items:center;gap:12px;padding:13px 16px;border:0.5px solid var(--border);border-radius:var(--rs);cursor:pointer;background:var(--bg3);margin-bottom:8px;}
+.ebtn:active{background:var(--bg4);}
+.ebtn-icon{font-size:26px;}
+.ebtn-info h4{font-size:14px;font-weight:600;margin-bottom:2px;font-family:'Cinzel',serif;font-weight:400;}
+.ebtn-info p{font-size:12px;color:var(--text2);font-style:italic;}
+
+/* Modal */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;overflow-y:auto;padding:20px 16px;padding-bottom:calc(20px + env(safe-area-inset-bottom));}
+.moverlay.on{display:block;}
+.modal{background:var(--bg2);border-radius:16px;padding:18px;max-width:480px;margin:0 auto;border:0.5px solid var(--border2);}
+.mhead{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
+.mface{width:64px;height:64px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden;}
+.mface img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.mhead-text h3{font-family:'Cinzel',serif;font-size:15px;font-weight:600;color:var(--gold2);margin-bottom:3px;}
+.mhead-text p{font-size:13px;color:var(--text2);font-style:italic;}
+.mrows{border-top:0.5px solid var(--border);padding-top:12px;}
+.mrow{display:flex;gap:8px;padding:5px 0;font-size:13px;border-bottom:0.5px solid var(--border);}
+.mrow:last-child{border:none;}
+.ml{color:var(--text3);width:100px;flex-shrink:0;font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.3px;padding-top:1px;}
+.mv{flex:1;word-break:break-word;color:var(--text);}
+.mact{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+.mphoto-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;}
+.mphoto{border-radius:var(--rs);overflow:hidden;aspect-ratio:1;background:var(--bg3);display:flex;align-items:center;justify-content:center;}
+.mphoto img{width:100%;height:100%;object-fit:cover;}
+.mphoto-label{font-size:10px;color:var(--text3);font-family:'Cinzel',serif;letter-spacing:0.3px;margin-top:3px;text-align:center;}
+
+/* Toast */
+.toast{position:fixed;bottom:calc(82px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(8px);background:var(--bg3);color:var(--gold2);padding:9px 16px;border-radius:20px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:all .2s;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center;border:0.5px solid var(--gold);font-family:'Crimson Pro',serif;font-style:italic;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Spinner */
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(201,168,76,0.2);border-top-color:var(--gold);border-radius:50%;animation:spi .6s linear infinite;vertical-align:middle;margin-right:4px;}
+@keyframes spi{to{transform:rotate(360deg)}}
+
+.empty{text-align:center;padding:50px 20px;color:var(--text3);}
+.empty .empty-icon{font-size:48px;margin-bottom:10px;opacity:0.5;}
+.dbg{margin-top:8px;background:var(--bg3);border-radius:var(--rs);padding:8px 10px;font-size:11px;font-family:monospace;color:var(--text2);display:none;max-height:100px;overflow-y:auto;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<!-- ── ADD COIN PAGE ─────────────────────────── -->
+<div class="page on" id="page-add">
+  <div class="phead">
+    <div class="phead-row">
+      <h1>🪙 RixCoins</h1>
+    </div>
+    <p>Add a coin to your collection</p>
+  </div>
+  <div class="sync-bar">
+    <div class="sdot off" id="sd1"></div>
+    <span class="slabel" id="sl1">Connecting…</span>
+    <button class="sbtn" onclick="doSync()">Sync</button>
+    <button class="sbtn" onclick="runDiag()" style="background:var(--amber-bg);color:var(--amber-text);border-color:var(--amber);">Diagnose</button>
+  </div>
+  <div class="mtabs">
+    <button class="mtab on" id="tab-search" onclick="switchTab('search',this)">🔍 Numista</button>
+    <button class="mtab" id="tab-photo" onclick="switchTab('photo',this)">🤖 AI Photo</button>
+    <button class="mtab" id="tab-manual" onclick="switchTab('manual',this)">✏️ Manual</button>
+  </div>
+
+  <!-- NUMISTA SEARCH -->
+  <div id="method-search">
+    <div class="search-section">
+      <div class="field-row">
+        <div class="field-group" style="flex:2;">
+          <label>Search (country, year, denomination…)</label>
+          <input type="text" id="ns-query" placeholder="e.g. Italy 1000 lire 1970" onkeydown="if(event.key==='Enter')doNumistaSearch()">
+        </div>
+        <div class="field-group" style="flex:0 0 auto;justify-content:flex-end;">
+          <label>&nbsp;</label>
+          <button class="btn btnp" id="ns-btn" onclick="doNumistaSearch()">Search</button>
+        </div>
+      </div>
+      <div id="dbg-search" class="dbg"></div>
+    </div>
+    <div class="nresults" id="nresults" style="margin-top:8px;"></div>
+  </div>
+
+  <!-- AI PHOTO -->
+  <div id="method-photo" style="display:none;">
+    <div class="photo-section">
+      <img id="ai-photo-preview" style="width:100%;max-height:200px;object-fit:contain;border-radius:var(--rs);background:var(--bg3);display:none;margin-bottom:8px;" alt="">
+      <button class="btn btnp" style="width:100%;" onclick="document.getElementById('ai-photo-input').click()">📷 Photograph the coin</button>
+      <input type="file" id="ai-photo-input" accept="image/*" style="display:none;" onchange="onAiPhotoSelect(event)">
+      <div class="ai-status" id="ai-status"></div>
+      <p style="font-size:12px;color:var(--text3);margin-top:8px;font-style:italic;">AI identifies country, year, denomination, metal, and emperor for ancient coins. Works for modern, ancient, and world coins.</p>
+    </div>
+  </div>
+
+  <!-- MANUAL -->
+  <div id="method-manual" style="display:none;">
+    <div class="search-section">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:10px;font-style:italic;">Enter all details manually — ideal for error coins, unlisted varieties, or coins not in the Numista catalogue.</p>
+      <button class="btn btnp" style="width:100%;" onclick="showResult({fromManual:true})">Open entry form</button>
+    </div>
+  </div>
+
+  <!-- RESULT CARD -->
+  <div class="rbox" id="rbox">
+    <div class="rtop">
+      <div class="coin-preview">
+        <div class="coin-face" id="rcov">🪙</div>
+        <div class="rmeta">
+          <h3 id="r-title">—</h3>
+          <div class="sub" id="r-sub">—</div>
+          <div class="tags" id="r-tags"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 photo slots -->
+    <div class="photo-slots">
+      <div class="photo-slot">
+        <label>Obverse</label>
+        <div class="photo-thumb" id="slot-obverse" onclick="document.getElementById('inp-obverse').click()">
+          <span class="add-icon">⊕</span>
+          <input type="file" id="inp-obverse" accept="image/*" style="display:none;" onchange="onSlotPhoto(event,'obverse')">
+        </div>
+      </div>
+      <div class="photo-slot">
+        <label>Reverse</label>
+        <div class="photo-thumb" id="slot-reverse" onclick="document.getElementById('inp-reverse').click()">
+          <span class="add-icon">⊕</span>
+          <input type="file" id="inp-reverse" accept="image/*" style="display:none;" onchange="onSlotPhoto(event,'reverse')">
+        </div>
+      </div>
+      <div class="photo-slot">
+        <label>Edge</label>
+        <div class="photo-thumb" id="slot-edge" onclick="document.getElementById('inp-edge').click()">
+          <span class="add-icon">⊕</span>
+          <input type="file" id="inp-edge" accept="image/*" style="display:none;" onchange="onSlotPhoto(event,'edge')">
+        </div>
+      </div>
+      <div class="photo-slot">
+        <label>Detail</label>
+        <div class="photo-thumb" id="slot-detail" onclick="document.getElementById('inp-detail').click()">
+          <span class="add-icon">⊕</span>
+          <input type="file" id="inp-detail" accept="image/*" style="display:none;" onchange="onSlotPhoto(event,'detail')">
+        </div>
+      </div>
+    </div>
+
+    <div class="rfields">
+      <div class="rf full"><label>Country / Issuer</label><input id="f-country" type="text" placeholder="e.g. Italy, Roman Empire"></div>
+      <div class="rf"><label>Year / Period</label><input id="f-year" type="text" placeholder="e.g. 1970, 27 BC"></div>
+      <div class="rf"><label>Denomination</label><input id="f-denomination" type="text" placeholder="e.g. 100 Lire, Denarius"></div>
+      <div class="rf full"><label>Type / Series</label><input id="f-type" type="text" placeholder="e.g. Pegaso, Augustan coinage"></div>
+      <div class="rf"><label>Metal</label>
+        <select id="f-metal">
+          <option value="">—</option>
+          <option>Gold</option><option>Silver</option><option>Bronze</option>
+          <option>Copper</option><option>Nickel</option><option>Bimetallic</option>
+          <option>Aluminium</option><option>Steel</option><option>Titanium</option><option>Other</option>
+        </select>
+      </div>
+      <div class="rf"><label>Category</label>
+        <select id="f-category">
+          <option value="">—</option>
+          <option>Modern</option><option>Ancient</option><option>Euro</option>
+          <option>Italian Lire</option><option>Error</option><option>Other</option>
+        </select>
+      </div>
+      <div class="rf"><label>Weight (g)</label><input id="f-weight" type="text" placeholder="e.g. 6.0"></div>
+      <div class="rf"><label>Diameter (mm)</label><input id="f-diameter" type="text" placeholder="e.g. 24.0"></div>
+      <div class="rf"><label>Mint</label><input id="f-mint" type="text" placeholder="e.g. Rome, R"></div>
+      <div class="rf"><label>Condition</label>
+        <select id="f-condition">
+          <option value="">—</option>
+          <option>MS / UNC</option><option>AU (About UNC)</option>
+          <option>XF (Extremely Fine)</option><option>VF (Very Fine)</option>
+          <option>F (Fine)</option><option>VG (Very Good)</option>
+          <option>G (Good)</option><option>Poor</option>
+        </select>
+      </div>
+      <div class="rf"><label>Purchase Price (£)</label><input id="f-purchasePrice" type="text" placeholder="0.00"></div>
+      <div class="rf"><label>Est. Value (£)</label><input id="f-estimatedValue" type="text" placeholder="0.00"></div>
+      <div class="rf full"><label>Acquired From</label><input id="f-acquiredFrom" type="text" placeholder="e.g. Auction, Dealer, Family"></div>
+      <div class="rf"><label>Date Acquired</label><input id="f-acquiredDate" type="date"></div>
+      <div class="rf"><label>Storage Location</label><input id="f-storage" type="text" placeholder="e.g. Album 2, Page 4"></div>
+      <div class="rf full"><label>Notes</label><input id="f-notes" type="text" placeholder="Varieties, errors, provenance…"></div>
+    </div>
+    <div class="ract">
+      <div class="ract-row">
+        <button class="btn btnp" style="flex:1;" onclick="saveCoin()">🪙 Add to Collection</button>
+        <button class="btn btns" style="flex:1;" onclick="saveToWishlist()">✨ Wishlist</button>
+      </div>
+      <button class="btn" style="width:100%;" onclick="clearResult()">Clear</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── COLLECTION PAGE ───────────────────────── -->
+<div class="page" id="page-collection">
+  <div class="phead"><h1>Collection</h1><p id="coll-sub">0 coins</p></div>
+  <div class="sync-bar">
+    <div class="sdot off" id="sd2"></div>
+    <span class="slabel" id="sl2">—</span>
+    <button class="sbtn" onclick="doSync()">Sync now</button>
+  </div>
+  <div class="search-wrap"><input type="text" id="coll-search" placeholder="Search country, year, denomination…" oninput="renderCollection()"></div>
+  <div class="frow">
+    <select id="f-cat-filter" onchange="renderCollection()"><option value="">All categories</option><option>Modern</option><option>Ancient</option><option>Euro</option><option>Italian Lire</option><option>Error</option><option>Other</option></select>
+    <select id="f-metal-filter" onchange="renderCollection()"><option value="">All metals</option><option>Gold</option><option>Silver</option><option>Bronze</option><option>Copper</option><option>Nickel</option><option>Bimetallic</option><option>Aluminium</option></select>
+    <select id="f-cond-filter" onchange="renderCollection()"><option value="">All conditions</option><option>MS / UNC</option><option>AU (About UNC)</option><option>XF (Extremely Fine)</option><option>VF (Very Fine)</option><option>F (Fine)</option><option>VG (Very Good)</option><option>G (Good)</option><option>Poor</option></select>
+    <select id="f-sort-coll" onchange="renderCollection()">
+      <option value="new">Recently added</option>
+      <option value="country">Country A–Z</option>
+      <option value="year">Year</option>
+      <option value="value">Highest value</option>
+    </select>
+  </div>
+  <div class="clist-wrap" id="clist"></div>
+  <div class="empty" id="coll-empty" style="display:none;"><div class="empty-icon">🪙</div><p style="font-style:italic;color:var(--text3);">No coins yet. Start adding your collection.</p></div>
+</div>
+
+<!-- ── ANALYTICS PAGE ───────────────────────── -->
+<div class="page" id="page-analytics">
+  <div class="phead"><h1>Analytics</h1><p>Your collection at a glance</p></div>
+  <div class="sgrid" id="sgrid"></div>
+  <div id="acharts"></div>
+</div>
+
+<!-- ── EXPORT PAGE ──────────────────────────── -->
+<div class="page" id="page-export">
+  <div class="phead"><h1>Export</h1><p>Download your collection data</p></div>
+  <div class="esec">
+    <div class="esec-h">Choose columns</div>
+    <div class="esec-b"><div class="cpicker" id="cpicker"></div></div>
+  </div>
+  <div class="esec" style="margin-top:10px;">
+    <div class="esec-h">Download</div>
+    <div class="esec-b">
+      <div class="ebtn" onclick="doExport('csv')">
+        <div class="ebtn-icon">📊</div>
+        <div class="ebtn-info"><h4>CSV — Excel / Numbers</h4><p>Best for sorting and filtering</p></div>
+      </div>
+      <div class="ebtn" onclick="doExport('tsv')">
+        <div class="ebtn-icon">📋</div>
+        <div class="ebtn-info"><h4>TSV — Google Sheets</h4><p>Paste directly without comma issues</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab on" data-p="add" onclick="showPage('add')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+    </svg>
+    Add
+  </button>
+  <button class="tab" data-p="collection" onclick="showPage('collection')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>
+    </svg>
+    Collection
+    <span class="tbadge" id="nb">0</span>
+  </button>
+  <button class="tab" data-p="analytics" onclick="showPage('analytics')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <polyline points="3,18 7,10 12,14 17,6 21,9"/><line x1="3" y1="21" x2="21" y2="21"/>
+    </svg>
+    Analytics
+  </button>
+  <button class="tab" data-p="export" onclick="showPage('export')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M4 16v3h16v-3"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="8,11 12,15 16,11"/>
+    </svg>
+    Export
+  </button>
+</div>
+
+<div class="moverlay" id="moverlay" onclick="if(event.target===this)closeMod()">
+  <div class="modal" id="modal"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const GS = 'https://script.google.com/macros/s/AKfycbxw83w7wfV9Xd1gyRsVULXobALaeNYSuuZdY98m0Pu0itKZVSJOnJBrrbw2xmYkJh42fA/exec';
+
+const COLS = [
+  {id:'country',label:'Country',on:true},{id:'year',label:'Year',on:true},
+  {id:'denomination',label:'Denomination',on:true},{id:'type',label:'Type',on:true},
+  {id:'metal',label:'Metal',on:true},{id:'category',label:'Category',on:true},
+  {id:'condition',label:'Condition',on:true},{id:'purchasePrice',label:'Purchase Price',on:true},
+  {id:'estimatedValue',label:'Est. Value',on:true},{id:'acquiredFrom',label:'Acquired From',on:false},
+  {id:'acquiredDate',label:'Date Acquired',on:false},{id:'storage',label:'Storage',on:true},
+  {id:'mint',label:'Mint',on:false},{id:'weight',label:'Weight',on:false},
+  {id:'diameter',label:'Diameter',on:false},{id:'numistaId',label:'Numista ID',on:false},
+  {id:'notes',label:'Notes',on:false},{id:'addedAt',label:'Date Added',on:false},
+];
+
+const COND_CLASS = {
+  'MS / UNC':'cond-mint','AU (About UNC)':'cond-mint',
+  'XF (Extremely Fine)':'cond-xf','VF (Very Fine)':'cond-vf',
+  'F (Fine)':'cond-f','VG (Very Good)':'cond-vg',
+  'G (Good)':'cond-poor','Poor':'cond-poor',
+};
+
+const METAL_TAG = {
+  'Gold':'tgold','Silver':'tsilver','Bronze':'tbronze',
+  'Copper':'tbronze','Nickel':'tsilver','Bimetallic':'tgold',
+  'Aluminium':'tblue','Steel':'tblue',
+};
+
+// Migrate from any older key
+let coins = JSON.parse(localStorage.getItem('rxc_v1') || '[]');
+let pending = null;
+let pendingPhotos = {obverse:null, reverse:null, edge:null, detail:null};
+let syncing = false;
+
+// ── CORE ──────────────────────────────────────
+function persist() {
+  localStorage.setItem('rxc_v1', JSON.stringify(coins));
+  const n = coins.filter(c => c.status !== 'wishlist').length;
+  const w = coins.filter(c => c.status === 'wishlist').length;
+  document.getElementById('nb').textContent = coins.length;
+  document.getElementById('coll-sub').textContent = n + ' coin' + (n!==1?'s':'') + (w?' · '+w+' wishlist':'');
+}
+
+function toast(m, d=2800) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), d);
+}
+
+function dbg(msg, id) {
+  const b = document.getElementById(id); if (!b) return;
+  b.style.display = 'block';
+  b.innerHTML += '<div>' + new Date().toLocaleTimeString() + ' — ' + msg + '</div>';
+  b.scrollTop = b.scrollHeight;
+}
+
+function setSS(state, label) {
+  ['sd1','sd2'].forEach(id => { const d = document.getElementById(id); if(d) d.className='sdot '+state; });
+  ['sl1','sl2'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent=label; });
+}
+
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  document.getElementById('page-' + p).classList.add('on');
+  document.querySelector('[data-p="' + p + '"]').classList.add('on');
+  if (p === 'collection') renderCollection();
+  if (p === 'analytics') renderAnalytics();
+  if (p === 'export') renderExport();
+  window.scrollTo(0, 0);
+}
+
+// ── SYNC ──────────────────────────────────────
+async function gsPost(payload) {
+  if (!GS) throw new Error('Apps Script URL not configured');
+  const r = await fetch(GS, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload),
+    redirect:'follow'
+  });
+  return JSON.parse(await r.text());
+}
+
+async function doSync() {
+  if (syncing || !GS) {
+    if (!GS) setSS('err', 'Apps Script URL not set');
+    return;
+  }
+  syncing = true;
+  setSS('syncing', 'Syncing…');
+  try {
+    const r = await fetch(GS + '?t=' + Date.now(), {redirect:'follow'});
+    const data = JSON.parse(await r.text());
+    if (data.error) throw new Error(data.error);
+    if (Array.isArray(data.coins) && data.coins.length > 0) {
+      // Preserve local photos — sheet may not have them
+      const localMap = {};
+      coins.forEach(c => { if (c.id) localMap[String(c.id)] = c; });
+      coins = data.coins.map(c => {
+        const loc = localMap[String(c.id)];
+        if (!loc) return c;
+        // Prefer lh3 URLs from local if sheet has none
+        const merged = {...c};
+        ['coverObverse','coverReverse','coverEdge','coverDetail'].forEach(f => {
+          if (loc[f] && loc[f].includes('lh3.googleusercontent.com')) merged[f] = loc[f];
+          else if (!merged[f] && loc[f]) merged[f] = loc[f];
+        });
+        return merged;
+      });
+      persist(); renderCollection();
+      setSS('ok', 'Synced · ' + new Date().toLocaleTimeString() + ' · ' + coins.length + ' coins');
+    } else {
+      setSS('ok', 'Up to date · ' + coins.length + ' coins');
+    }
+  } catch(e) {
+    setSS('err', 'Sync failed: ' + e.message.substring(0,50));
+  }
+  syncing = false;
+}
+
+async function sheetSave(coin) {
+  if (!GS) return;
+  setSS('syncing', 'Saving…');
+  try { await gsPost({action:'save', coin}); setSS('ok', 'Saved · ' + new Date().toLocaleTimeString()); }
+  catch(e) { setSS('err', 'Local only — sheet unavailable'); }
+}
+
+async function sheetUpdate(coin) {
+  if (!GS) return;
+  setSS('syncing', 'Updating…');
+  try { await gsPost({action:'update', coin}); setSS('ok', 'Updated · ' + new Date().toLocaleTimeString()); }
+  catch(e) { setSS('err', 'Local only — sheet unavailable'); }
+}
+
+async function sheetDelete(id) {
+  if (!GS) return;
+  try { await gsPost({action:'delete', id}); }
+  catch(e) { console.error('Delete error:', e); }
+}
+
+// ── PHOTO UPLOAD ──────────────────────────────
+function compressImg(dataUrl, maxW=600, q=0.82) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, maxW / img.width);
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * s);
+      c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      res(c.toDataURL('image/jpeg', q));
+    };
+    img.onerror = () => res(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+async function uploadPhotoToDrive(dataUrl, filename) {
+  if (!GS) return dataUrl; // keep local if no backend
+  const compressed = await compressImg(dataUrl);
+  const raw = compressed.indexOf(',') > -1 ? compressed.split(',')[1] : compressed;
+  const d = await gsPost({
+    action: 'uploadCover',
+    base64: raw,
+    mediaType: 'image/jpeg',
+    filename: filename
+  });
+  return d.driveUrl || dataUrl;
+}
+
+function onSlotPhoto(e, slot) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingPhotos[slot] = {dataUrl: ev.target.result, type: file.type};
+    const slotEl = document.getElementById('slot-' + slot);
+    slotEl.innerHTML = '<img src="' + ev.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:var(--rs);">'
+      + '<input type="file" id="inp-' + slot + '" accept="image/*" style="display:none;" onchange="onSlotPhoto(event,\'' + slot + '\')">';
+    // Update coin preview with obverse
+    if (slot === 'obverse') {
+      const cov = document.getElementById('rcov');
+      cov.innerHTML = '<img src="' + ev.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── TABS ──────────────────────────────────────
+function switchTab(tab, el) {
+  document.querySelectorAll('.mtab').forEach(x => x.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('method-search').style.display = tab==='search'?'block':'none';
+  document.getElementById('method-photo').style.display  = tab==='photo' ?'block':'none';
+  document.getElementById('method-manual').style.display = tab==='manual'?'block':'none';
+}
+
+// ── NUMISTA SEARCH ────────────────────────────
+async function doNumistaSearch() {
+  const q = document.getElementById('ns-query').value.trim();
+  if (!q) { toast('Enter a search term'); return; }
+  const btn = document.getElementById('ns-btn');
+  btn.innerHTML = '<span class="spin"></span>'; btn.disabled = true;
+  document.getElementById('nresults').innerHTML = '';
+  document.getElementById('dbg-search').innerHTML = '';
+  try {
+    dbg('Searching Numista: ' + q, 'dbg-search');
+    if (!GS) throw new Error('Apps Script URL not configured — set GS in the script');
+    const url = GS + '?action=numista_search&q=' + encodeURIComponent(q) + '&t=' + Date.now();
+    const r = await fetch(url, {redirect:'follow'});
+    const data = JSON.parse(await r.text());
+    if (data.error) throw new Error(data.error);
+    const types = data.types || data.results || [];
+    dbg('Found ' + types.length + ' result(s)', 'dbg-search');
+    renderNumistaResults(types);
+  } catch(e) {
+    dbg('Error: ' + e.message, 'dbg-search');
+    toast('Search failed — try AI Photo or Manual');
+  }
+  btn.textContent = 'Search'; btn.disabled = false;
+}
+
+function renderNumistaResults(types) {
+  const el = document.getElementById('nresults');
+  if (!types.length) { el.innerHTML = '<p style="padding:12px;color:var(--text3);font-style:italic;text-align:center;">No results. Try AI Photo or Manual entry.</p>'; return; }
+  el.innerHTML = types.map(t => {
+    const thumb = t.obverse_thumbnail || t.reverse_thumbnail || '';
+    const issuer = t.issuer ? t.issuer.name : '';
+    const sub = [issuer, t.min_year && t.max_year ? t.min_year + (t.min_year!==t.max_year?'–'+t.max_year:'') : ''].filter(Boolean).join(' · ');
+    return '<div class="nitem" onclick="selectNumistaType(' + JSON.stringify(JSON.stringify(t)) + ')">'
+      + '<div class="nthumb">' + (thumb ? '<img src="' + thumb + '" onerror="this.style.display=\'none\'">' : '🪙') + '</div>'
+      + '<div class="ninfo"><h4>' + esc(t.title||'Untitled') + '</h4><p>' + esc(sub) + '</p></div>'
+      + '<span class="nchoose">Select →</span>'
+      + '</div>';
+  }).join('');
+}
+
+async function selectNumistaType(tJson) {
+  const t = JSON.parse(tJson);
+  // Fetch full details
+  toast('Loading coin details…');
+  try {
+    const url = GS + '?action=numista_coin&id=' + t.id + '&t=' + Date.now();
+    const r = await fetch(url, {redirect:'follow'});
+    const data = JSON.parse(await r.text());
+    const coin = data.error ? t : data; // fall back to search result if detail fails
+    showResult({
+      country: coin.issuer ? coin.issuer.name : '',
+      year: coin.min_year ? String(coin.min_year) + (coin.max_year && coin.max_year!==coin.min_year ? '–'+coin.max_year : '') : '',
+      denomination: coin.value ? (coin.value.text || coin.value.numeric_value + ' ' + (coin.value.currency ? coin.value.currency.name : '')) : '',
+      type: coin.title || '',
+      metal: coin.composition ? (coin.composition.text || '') : '',
+      weight: coin.weight ? String(coin.weight) : '',
+      diameter: coin.diameter ? String(coin.diameter) : '',
+      mint: '',
+      category: 'Modern',
+      numistaId: String(t.id),
+      coverObverse: coin.obverse_thumbnail || t.obverse_thumbnail || '',
+      coverReverse: coin.reverse_thumbnail || t.reverse_thumbnail || '',
+    });
+  } catch(e) {
+    showResult({
+      country: t.issuer ? t.issuer.name : '',
+      type: t.title || '',
+      numistaId: String(t.id),
+      coverObverse: t.obverse_thumbnail || '',
+      coverReverse: t.reverse_thumbnail || '',
+    });
+  }
+}
+
+// ── AI PHOTO ──────────────────────────────────
+function onAiPhotoSelect(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const prev = document.getElementById('ai-photo-preview');
+    prev.src = ev.target.result; prev.style.display = 'block';
+    // Also pre-fill obverse slot
+    pendingPhotos.obverse = {dataUrl: ev.target.result, type: file.type};
+    analysePhoto(ev.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analysePhoto(dataUrl) {
+  const st = document.getElementById('ai-status');
+  st.className = 'ai-status loading'; st.style.display = 'block';
+  st.innerHTML = '<span class="spin"></span> Identifying coin with AI…';
+  try {
+    const d = await gsPost({
+      action: 'analysePhoto',
+      base64: dataUrl.split(',')[1],
+      mediaType: dataUrl.split(';')[0].split(':')[1]
+    });
+    if (d.error) throw new Error(d.error);
+    if (!d.result) throw new Error('No result returned');
+    const r = d.result;
+    st.className = 'ai-status ok';
+    st.innerHTML = '✓ Identified (confidence: ' + (r.confidence||'?') + ')' + (r.emperor ? ' — ' + r.emperor : '');
+    showResult({
+      country: r.country || '',
+      year: r.year || '',
+      denomination: r.denomination || '',
+      type: r.type || (r.emperor ? 'Emperor: ' + r.emperor : ''),
+      metal: r.metal || '',
+      mint: r.mint || '',
+      category: r.category || '',
+      notes: r.notes || '',
+      coverObverse: dataUrl,
+      fromPhoto: true,
+    });
+  } catch(e) {
+    st.className = 'ai-status err';
+    st.innerHTML = '✗ ' + e.message;
+  }
+}
+
+// ── RESULT CARD ───────────────────────────────
+function showResult(data) {
+  pending = data;
+
+  // Coin face preview — use obverse if available
+  const cov = document.getElementById('rcov');
+  const obv = data.coverObverse || pendingPhotos.obverse?.dataUrl || '';
+  if (obv && (obv.startsWith('http') || obv.startsWith('data:'))) {
+    cov.innerHTML = '<img src="' + obv + '" onerror="this.parentElement.innerHTML=\'🪙\';" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+  } else {
+    cov.innerHTML = '🪙';
+  }
+
+  // If we have Numista thumbnails, pre-fill slots
+  if (data.coverObverse && data.coverObverse.startsWith('http')) {
+    const sl = document.getElementById('slot-obverse');
+    sl.innerHTML = '<img src="' + data.coverObverse + '" onerror="this.style.display=\'none\';" style="width:100%;height:100%;object-fit:cover;border-radius:var(--rs);">'
+      + '<input type="file" id="inp-obverse" accept="image/*" style="display:none;" onchange="onSlotPhoto(event,\'obverse\')">';
+  }
+  if (data.coverReverse && data.coverReverse.startsWith('http')) {
+    const sl = document.getElementById('slot-reverse');
+    sl.innerHTML = '<img src="' + data.coverReverse + '" onerror="this.style.display=\'none\';" style="width:100%;height:100%;object-fit:cover;border-radius:var(--rs);">'
+      + '<input type="file" id="inp-reverse" accept="image/*" style="display:none;" onchange="onSlotPhoto(event,\'reverse\')">';
+  }
+
+  document.getElementById('r-title').textContent = data.type || data.denomination || 'New coin';
+  document.getElementById('r-sub').textContent = [data.country, data.year, data.denomination].filter(Boolean).join(' · ');
+
+  const tg = document.getElementById('r-tags'); tg.innerHTML = '';
+  if (data.metal) tg.innerHTML += '<span class="tag ' + (METAL_TAG[data.metal]||'tblue') + '">' + data.metal + '</span>';
+  if (data.category) tg.innerHTML += '<span class="tag tamber">' + data.category + '</span>';
+  if (data.fromPhoto) tg.innerHTML += '<span class="tag tgreen">AI identified</span>';
+  if (data.numistaId) tg.innerHTML += '<span class="tag tsilver">Numista #' + data.numistaId + '</span>';
+
+  // Fill form
+  setV('f-country', data.country);
+  setV('f-year', data.year);
+  setV('f-denomination', data.denomination);
+  setV('f-type', data.type);
+  setV('f-metal', data.metal, true);
+  setV('f-category', data.category, true);
+  setV('f-weight', data.weight);
+  setV('f-diameter', data.diameter);
+  setV('f-mint', data.mint);
+  setV('f-notes', data.notes);
+
+  document.getElementById('rbox').classList.add('on');
+  setTimeout(() => document.getElementById('rbox').scrollIntoView({behavior:'smooth', block:'nearest'}), 100);
+}
+
+function setV(id, val, isSelect=false) {
+  const el = document.getElementById(id); if (!el || !val) return;
+  if (isSelect) {
+    // Try to match option
+    for (const opt of el.options) {
+      if (opt.value.toLowerCase().includes((val||'').toLowerCase()) || (val||'').toLowerCase().includes(opt.value.toLowerCase())) {
+        el.value = opt.value; return;
+      }
+    }
+  } else {
+    el.value = val || '';
+  }
+}
+
+function clearResult() {
+  pending = null;
+  pendingPhotos = {obverse:null, reverse:null, edge:null, detail:null};
+  document.getElementById('rbox').classList.remove('on');
+  // Reset photo slots
+  ['obverse','reverse','edge','detail'].forEach(s => {
+    document.getElementById('slot-' + s).innerHTML = '<span class="add-icon">⊕</span><input type="file" id="inp-' + s + '" accept="image/*" style="display:none;" onchange="onSlotPhoto(event,\'' + s + '\')">';
+  });
+  document.getElementById('rcov').innerHTML = '🪙';
+  document.getElementById('nresults').innerHTML = '';
+  document.getElementById('ns-query').value = '';
+  const pp = document.getElementById('ai-photo-preview'); pp.style.display='none'; pp.src='';
+  document.getElementById('ai-status').style.display='none';
+  document.getElementById('ai-photo-input').value='';
+  ['f-country','f-year','f-denomination','f-type','f-weight','f-diameter','f-mint','f-notes','f-purchasePrice','f-estimatedValue','f-acquiredFrom','f-acquiredDate','f-storage'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  ['f-metal','f-category','f-condition'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+}
+
+async function saveCoin(status='collection') {
+  if (!pending && !document.getElementById('f-country').value && !document.getElementById('f-type').value) {
+    toast('Please add some coin details first'); return;
+  }
+  toast('Saving…');
+
+  const id = Date.now();
+  const coin = {
+    id, addedAt: new Date().toISOString(), status,
+    country: document.getElementById('f-country').value.trim(),
+    year: document.getElementById('f-year').value.trim(),
+    denomination: document.getElementById('f-denomination').value.trim(),
+    type: document.getElementById('f-type').value.trim(),
+    metal: document.getElementById('f-metal').value,
+    category: document.getElementById('f-category').value,
+    weight: document.getElementById('f-weight').value.trim(),
+    diameter: document.getElementById('f-diameter').value.trim(),
+    mint: document.getElementById('f-mint').value.trim(),
+    condition: document.getElementById('f-condition').value,
+    purchasePrice: document.getElementById('f-purchasePrice').value.trim(),
+    estimatedValue: document.getElementById('f-estimatedValue').value.trim(),
+    acquiredFrom: document.getElementById('f-acquiredFrom').value.trim(),
+    acquiredDate: document.getElementById('f-acquiredDate').value,
+    storage: document.getElementById('f-storage').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+    numistaId: pending ? pending.numistaId || '' : '',
+    coverObverse: pending ? (pending.coverObverse || '') : '',
+    coverReverse: pending ? (pending.coverReverse || '') : '',
+    coverEdge: '', coverDetail: '',
+  };
+
+  // Save immediately with whatever covers we have
+  coins.unshift(coin);
+  persist(); clearResult();
+  toast(status==='wishlist' ? '✨ Added to wishlist!' : '🪙 Added to collection!');
+  await sheetSave(coin);
+
+  // Upload photos to Drive in background
+  const uploads = [];
+  const slots = ['obverse','reverse','edge','detail'];
+  for (const slot of slots) {
+    const ph = pendingPhotos[slot];
+    const field = 'cover' + slot.charAt(0).toUpperCase() + slot.slice(1);
+    if (ph && ph.dataUrl && GS) {
+      uploads.push((async () => {
+        try {
+          setSS('syncing', 'Uploading ' + slot + ' photo…');
+          const url = await uploadPhotoToDrive(ph.dataUrl, 'coin_' + id + '_' + slot);
+          const idx = coins.findIndex(c => String(c.id) === String(id));
+          if (idx >= 0) { coins[idx][field] = url; }
+        } catch(e) { console.error('Photo upload error:', slot, e.message); }
+      })());
+    } else if (ph && ph.dataUrl) {
+      // No backend — store as data URL locally
+      const idx = coins.findIndex(c => String(c.id) === String(id));
+      if (idx >= 0) coins[idx][field] = ph.dataUrl;
+    }
+    // Also handle Numista thumbnail URLs — fetch and store in Drive
+    const existingUrl = coin[field];
+    if (existingUrl && existingUrl.startsWith('http') && !existingUrl.includes('lh3.googleusercontent') && GS) {
+      uploads.push((async () => {
+        try {
+          setSS('syncing', 'Saving ' + slot + ' thumbnail…');
+          const d = await gsPost({action:'fetchImage', url: existingUrl, filename: 'coin_' + id + '_' + slot});
+          if (d.driveUrl) {
+            const idx = coins.findIndex(c => String(c.id) === String(id));
+            if (idx >= 0) coins[idx][field] = d.driveUrl;
+          }
+        } catch(e) { console.error('Thumbnail save error:', slot, e.message); }
+      })());
+    }
+  }
+
+  if (uploads.length) {
+    await Promise.all(uploads);
+    persist();
+    const idx = coins.findIndex(c => String(c.id) === String(id));
+    if (idx >= 0) await sheetUpdate(coins[idx]);
+    setSS('ok', 'Photos saved · ' + new Date().toLocaleTimeString());
+    renderCollection();
+  }
+}
+
+function saveToWishlist() { saveCoin('wishlist'); }
+
+// ── COLLECTION RENDER ─────────────────────────
+function coinFaceHtml(coin, size='md') {
+  const img = coin.coverObverse || coin.coverReverse || '';
+  const sz = size === 'sm' ? 44 : 48;
+  const r = sz/2 + 'px';
+  if (img && (img.startsWith('http') || img.startsWith('data:'))) {
+    return '<img src="' + img + '" onerror="this.onerror=null;this.parentElement.innerHTML=\'🪙\';" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+  }
+  return '🪙';
+}
+
+function renderCollection() {
+  const q = (document.getElementById('coll-search').value||'').toLowerCase();
+  const cat = document.getElementById('f-cat-filter').value;
+  const metal = document.getElementById('f-metal-filter').value;
+  const cond = document.getElementById('f-cond-filter').value;
+  const sort = document.getElementById('f-sort-coll').value;
+
+  let list = [...coins];
+  if (q) list = list.filter(c => ((c.country||'')+(c.year||'')+(c.denomination||'')+(c.type||'')+(c.notes||'')).toLowerCase().includes(q));
+  if (cat) list = list.filter(c => c.category === cat);
+  if (metal) list = list.filter(c => c.metal === metal);
+  if (cond) list = list.filter(c => c.condition === cond);
+
+  if (sort === 'country') list.sort((a,b) => (a.country||'').localeCompare(b.country||''));
+  else if (sort === 'year') list.sort((a,b) => {
+    const ay = parseInt(a.year)||0, by = parseInt(b.year)||0;
+    return by - ay;
+  });
+  else if (sort === 'value') list.sort((a,b) => (parseFloat(b.estimatedValue)||0) - (parseFloat(a.estimatedValue)||0));
+
+  const el = document.getElementById('clist');
+  const emp = document.getElementById('coll-empty');
+
+  if (!list.length) { el.innerHTML=''; emp.style.display='block'; return; }
+  emp.style.display='none';
+
+  el.innerHTML = list.map(c => {
+    const title = c.type || c.denomination || c.country || 'Unknown';
+    const sub = [c.country, c.year, c.denomination].filter(Boolean).join(' · ');
+    const condClass = COND_CLASS[c.condition] || 'cond-poor';
+    const val = c.estimatedValue ? '£' + parseFloat(c.estimatedValue).toFixed(2) : '';
+    const isWish = c.status === 'wishlist';
+    return '<div class="citem" onclick="openCoin(\'' + c.id + '\')">'
+      + '<div class="citem-face">' + coinFaceHtml(c) + '</div>'
+      + '<div class="cinfo">'
+      + '<h4>' + esc(title) + (isWish?' ✨':'') + '</h4>'
+      + '<div class="csub">' + esc(sub||'—') + '</div>'
+      + '<div class="tags" style="gap:3px;">'
+      + (c.metal ? '<span class="tag ' + (METAL_TAG[c.metal]||'tblue') + '" style="font-size:10px;padding:1px 6px;">' + esc(c.metal) + '</span>' : '')
+      + (c.category ? '<span class="tag tamber" style="font-size:10px;padding:1px 6px;">' + esc(c.category) + '</span>' : '')
+      + '</div></div>'
+      + '<div class="cright">'
+      + (c.condition ? '<span class="cond-pill ' + condClass + '">' + esc(c.condition.split(' ')[0]) + '</span>' : '')
+      + (val ? '<span class="val-badge">' + val + '</span>' : '')
+      + (c.storage ? '<div style="font-size:10px;color:var(--text3);">' + esc(c.storage) + '</div>' : '')
+      + '</div></div>';
+  }).join('');
+}
+
+function openCoin(id) {
+  const c = coins.find(x => String(x.id) === String(id)); if (!c) return;
+  const photos = ['coverObverse','coverReverse','coverEdge','coverDetail']
+    .filter(f => c[f] && (c[f].startsWith('http') || c[f].startsWith('data:')));
+
+  const photoGrid = photos.length ? '<div class="mphoto-grid">' +
+    ['obverse','reverse','edge','detail'].map((s,i) => {
+      const f = 'cover' + s.charAt(0).toUpperCase() + s.slice(1);
+      if (!c[f]) return '';
+      return '<div><div class="mphoto"><img src="' + c[f] + '" onerror="this.style.display=\'none\';" style="width:100%;height:100%;object-fit:cover;"></div>'
+        + '<div class="mphoto-label">' + s.toUpperCase() + '</div></div>';
+    }).join('') + '</div>' : '';
+
+  document.getElementById('modal').innerHTML =
+    '<div class="mhead">'
+    + '<div class="mface">' + coinFaceHtml(c, 'lg') + '</div>'
+    + '<div class="mhead-text"><h3>' + esc(c.type || c.denomination || 'Coin') + '</h3>'
+    + '<p>' + esc([c.country, c.year].filter(Boolean).join(' · ')) + '</p>'
+    + '<div class="tags" style="margin-top:5px;gap:4px;">'
+    + (c.metal ? '<span class="tag ' + (METAL_TAG[c.metal]||'tblue') + '">' + esc(c.metal) + '</span>' : '')
+    + (c.condition ? '<span class="tag tamber">' + esc(c.condition) + '</span>' : '')
+    + '</div></div></div>'
+    + photoGrid
+    + '<div class="mrows">'
+    + mrow('Denomination', c.denomination)
+    + mrow('Year', c.year)
+    + mrow('Country', c.country)
+    + mrow('Metal', c.metal)
+    + mrow('Weight', c.weight ? c.weight + ' g' : '')
+    + mrow('Diameter', c.diameter ? c.diameter + ' mm' : '')
+    + mrow('Mint', c.mint)
+    + mrow('Category', c.category)
+    + mrow('Condition', c.condition)
+    + mrow('Purchase Price', c.purchasePrice ? '£' + c.purchasePrice : '')
+    + mrow('Est. Value', c.estimatedValue ? '£' + c.estimatedValue : '')
+    + mrow('Acquired From', c.acquiredFrom)
+    + mrow('Date Acquired', c.acquiredDate)
+    + mrow('Storage', c.storage)
+    + (c.numistaId ? mrow('Numista ID', '#' + c.numistaId) : '')
+    + (c.notes ? mrow('Notes', c.notes) : '')
+    + '</div>'
+    + '<div class="mact">'
+    + '<button class="btn btnd" onclick="delCoin(\'' + c.id + '\')">Remove</button>'
+    + '<button class="btn" onclick="closeMod()">Close</button>'
+    + '</div>';
+  document.getElementById('moverlay').classList.add('on');
+}
+
+function mrow(l, v) {
+  return v ? '<div class="mrow"><span class="ml">' + l + '</span><span class="mv">' + esc(String(v)) + '</span></div>' : '';
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function closeMod() { document.getElementById('moverlay').classList.remove('on'); }
+
+async function delCoin(id) {
+  coins = coins.filter(c => String(c.id) !== String(id));
+  persist(); closeMod(); renderCollection(); toast('Removed');
+  await sheetDelete(id);
+}
+
+// ── ANALYTICS ─────────────────────────────────
+function renderAnalytics() {
+  const total = coins.length;
+  const inColl = coins.filter(c => c.status !== 'wishlist').length;
+  const wishlist = coins.filter(c => c.status === 'wishlist').length;
+  const totalVal = coins.reduce((s,c) => s + (parseFloat(c.estimatedValue)||0), 0);
+  const totalSpent = coins.reduce((s,c) => s + (parseFloat(c.purchasePrice)||0), 0);
+
+  const cats = {}, metals = {}, countries = {}, conditions = {};
+  coins.forEach(c => {
+    if (c.category) cats[c.category] = (cats[c.category]||0)+1;
+    if (c.metal) metals[c.metal] = (metals[c.metal]||0)+1;
+    if (c.country) countries[c.country] = (countries[c.country]||0)+1;
+    if (c.condition) conditions[c.condition] = (conditions[c.condition]||0)+1;
+  });
+
+  document.getElementById('sgrid').innerHTML =
+    scard('Total Coins', inColl) +
+    scard('Wishlist', wishlist, 'color:var(--amber-text)') +
+    scard('Est. Value', totalVal ? '£' + totalVal.toFixed(0) : '—', 'color:var(--gold2)') +
+    scard('Spent', totalSpent ? '£' + totalSpent.toFixed(0) : '—') +
+    (totalVal && totalSpent ? '<div class="scard full" style="border:0.5px solid var(--border);"><div class="sl">Gain / Loss</div><div class="sv" style="font-size:20px;' + (totalVal>=totalSpent?'color:var(--green-text)':'color:var(--red-text)') + '">' + (totalVal>=totalSpent?'+':'') + '£' + (totalVal-totalSpent).toFixed(0) + '</div></div>' : '');
+
+  const bc = ['var(--gold)','var(--silver)','var(--bronze)','var(--green)','var(--blue)'];
+
+  document.getElementById('acharts').innerHTML =
+    barChart('By Category', cats, bc) +
+    barChart('By Metal', metals, bc) +
+    barChart('Top Countries', countries, bc, 8) +
+    barChart('By Condition', conditions, bc);
+}
+
+function scard(label, val, style='') {
+  return '<div class="scard"><div class="sl">' + label + '</div><div class="sv" style="' + style + '">' + val + '</div></div>';
+}
+
+function barChart(title, data, colors, limit=10) {
+  const entries = Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0, limit);
+  if (!entries.length) return '';
+  const max = entries[0][1];
+  const rows = entries.map(([k,v], i) =>
+    '<div class="brow"><span class="bl" title="' + esc(k) + '">' + esc(k) + '</span>'
+    + '<div class="bt"><div class="bf" style="width:' + Math.round(v/max*100) + '%;background:' + colors[i%colors.length] + ';"></div></div>'
+    + '<span class="bc">' + v + '</span></div>'
+  ).join('');
+  return '<div class="acard"><h4>' + title + '</h4>' + rows + '</div>';
+}
+
+// ── EXPORT ────────────────────────────────────
+function renderExport() {
+  document.getElementById('cpicker').innerHTML = COLS.map(c =>
+    '<span class="ctog' + (c.on?' on':'') + '" onclick="toggleCol(\'' + c.id + '\',this)">' + c.label + '</span>'
+  ).join('');
+}
+function toggleCol(id, el) { const c=COLS.find(x=>x.id===id); if(c){c.on=!c.on;el.classList.toggle('on',c.on);} }
+function doExport(fmt) {
+  const cols = COLS.filter(c => c.on);
+  if (!coins.length) { toast('No coins to export'); return; }
+  const sep = fmt==='tsv'?'\t':',';
+  const e = v => fmt==='csv'?'"'+String(v||'').replace(/"/g,'""')+'"':String(v||'');
+  const content = [cols.map(c=>e(c.label)).join(sep), ...coins.map(c=>cols.map(col=>e(c[col.id]||'')).join(sep))].join('\n');
+  const blob = new Blob(['\uFEFF'+content],{type:fmt==='tsv'?'text/tab-separated-values':'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='rixcoins-'+new Date().toISOString().slice(0,10)+'.'+fmt;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Exported ' + coins.length + ' coins as .' + fmt.toUpperCase());
+}
+
+// ── DIAGNOSTICS ───────────────────────────────
+async function runDiag() {
+  const log = [];
+  const step = (msg) => { log.push(msg); setSS('syncing', msg.substring(0,60)); };
+  const fail = (msg) => { log.push('❌ ' + msg); };
+  const ok   = (msg) => { log.push('✅ ' + msg); };
+
+  step('Step 1: Checking GS URL…');
+  if (!GS) { fail('GS URL is empty — not set in script'); showDiagResult(log); return; }
+  ok('GS URL set: ' + GS.substring(0,60) + '…');
+
+  step('Step 2: GET request (fetch coins)…');
+  try {
+    const r = await fetch(GS + '?t=' + Date.now(), {redirect:'follow'});
+    ok('HTTP ' + r.status + ' ' + r.statusText);
+    const text = await r.text();
+    ok('Response length: ' + text.length + ' chars');
+    ok('First 200 chars: ' + text.substring(0,200));
+    try {
+      const data = JSON.parse(text);
+      if (data.error) fail('Script returned error: ' + data.error);
+      else if (Array.isArray(data.coins)) ok('Coins array found: ' + data.coins.length + ' rows');
+      else ok('Parsed JSON keys: ' + Object.keys(data).join(', '));
+    } catch(e) {
+      fail('JSON parse failed: ' + e.message);
+      fail('Raw response: ' + text.substring(0,300));
+    }
+  } catch(e) {
+    fail('Fetch error: ' + e.message);
+  }
+
+  step('Step 3: POST ping test…');
+  try {
+    const r = await fetch(GS, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'ping'}),
+      redirect:'follow'
+    });
+    ok('POST HTTP ' + r.status);
+    const text = await r.text();
+    ok('POST response: ' + text.substring(0,200));
+    try {
+      const data = JSON.parse(text);
+      if (data.pong) ok('Ping successful — script is alive');
+      else fail('No pong received: ' + JSON.stringify(data));
+    } catch(e) {
+      fail('POST JSON parse failed: ' + e.message);
+    }
+  } catch(e) {
+    fail('POST fetch error: ' + e.message);
+  }
+
+  setSS('ok', 'Diagnostics complete');
+  showDiagResult(log);
+}
+
+function showDiagResult(log) {
+  document.getElementById('modal').innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
+    + '<h3 style="font-family:\'Cinzel\',serif;color:var(--gold2);font-size:15px;">Diagnostics</h3>'
+    + '<button class="btn btn-sm" onclick="closeMod()">Close</button></div>'
+    + '<div style="font-size:12px;font-family:monospace;line-height:1.8;max-height:65vh;overflow-y:auto;">'
+    + log.map(l => '<div style="padding:3px 0;border-bottom:0.5px solid var(--border);word-break:break-all;">' + esc(l) + '</div>').join('')
+    + '</div>';
+  document.getElementById('moverlay').classList.add('on');
+}
+
+// ── INIT ──────────────────────────────────────
+persist();
+if (GS) doSync();
+else setSS('off', 'Set GS URL in script to enable sync');
+</script>
+</body>
+</html>
